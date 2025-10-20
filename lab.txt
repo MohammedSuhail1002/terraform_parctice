@@ -1,0 +1,2407 @@
+V-6,7,8--create resource froup, storage account,container and blob
+----------------------
+main.tf
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "4.47.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  # Configuration options
+  features {}
+  client_id       = "c1f28e11-6ba6-4ae5-a90a-ce1cbe5dde2f"
+  client_secret   = "p7e8Q~6.Ya4GpOSMjA3_66VD4NNkdmrsq6-qIap9"
+  tenant_id       = "e47cc316-01c9-4e64-b3b0-c1d4492201fc"
+  subscription_id = "5935fb87-eae8-429f-b3ea-aeb9da97e1c2"
+}
+
+resource "azurerm_resource_group" "RG_details" {
+  name     = "myrg"
+  location = "Central india"
+}
+
+resource "azurerm_storage_account" "Storage1" {
+  name                     = "mystorage1122334455"
+  resource_group_name      = azurerm_resource_group.RG_details.name
+  location                 = azurerm_resource_group.RG_details.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+
+  
+}
+
+resource "azurerm_storage_container" "container1" {
+  name                  = "mycontainer"
+  storage_account_id    = azurerm_storage_account.Storage1.id
+  container_access_type = "private"
+}
+
+resource "azurerm_storage_blob" "blob1" {
+  name                   = "script.txt"
+  storage_account_name   = azurerm_storage_account.Storage1.name
+  storage_container_name = azurerm_storage_container.container1.name
+  type                   = "Block"
+  source                 = "sam.txt"
+}
+------------------------------------
+
+
+v=9  local variables
+main.tf
+---------------------------------
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "4.47.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  # Configuration options
+  features {}
+  client_id       = "c1f28e11-6ba6-4ae5-a90a-ce1cbe5dde2f"
+  client_secret   = "p7e8Q~6.Ya4GpOSMjA3_66VD4NNkdmrsq6-qIap9"
+  tenant_id       = "e47cc316-01c9-4e64-b3b0-c1d4492201fc"
+  subscription_id = "5935fb87-eae8-429f-b3ea-aeb9da97e1c2"
+}
+
+locals{
+    resource_group_name = "myrg"
+    location = "Central india"
+}
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_storage_account" "Storage1" {
+  name                     = "mystorage1122334455"
+  resource_group_name      = azurerm_resource_group.RG_details.name
+  location                 = azurerm_resource_group.RG_details.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+
+  
+}
+
+resource "azurerm_storage_container" "container1" {
+  name                  = "mycontainer"
+  storage_account_id    = azurerm_storage_account.Storage1.id
+  container_access_type = "private"
+}
+
+resource "azurerm_storage_blob" "blob1" {
+  name                   = "script.txt"
+  storage_account_name   = azurerm_storage_account.Storage1.name
+  storage_container_name = azurerm_storage_container.container1.name
+  type                   = "Block"
+  source                 = "sam.txt"
+}
+-------------------------------------------
+
+v-10  creating virtual network
+main.tf
+----------------------------
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "4.47.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  # Configuration options
+  features {}
+  client_id       = "c1f28e11-6ba6-4ae5-a90a-ce1cbe5dde2f"
+  client_secret   = "p7e8Q~6.Ya4GpOSMjA3_66VD4NNkdmrsq6-qIap9"
+  tenant_id       = "e47cc316-01c9-4e64-b3b0-c1d4492201fc"
+  subscription_id = "5935fb87-eae8-429f-b3ea-aeb9da97e1c2"
+}
+
+locals{
+    resource_group_name = "myrg"
+    location = "Central india"
+}
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_virtual_network" "myVnet" {
+  name                = "Vnet1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  address_space       = ["10.0.0.0/16"]
+  
+
+  subnet {
+    name             = "subnet1"
+    address_prefixes = ["10.0.1.0/24"]
+  }
+
+  subnet {
+    name             = "subnet2"
+    address_prefixes = ["10.0.2.0/24"]
+    
+  }
+}
+
+---------------------------------------------------
+v-11--create Vnet and subnet as resource seperately
+main,tf
+------------------------------------
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "4.47.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  # Configuration options
+  features {}
+  client_id       = "c1f28e11-6ba6-4ae5-a90a-ce1cbe5dde2f"
+  client_secret   = "p7e8Q~6.Ya4GpOSMjA3_66VD4NNkdmrsq6-qIap9"
+  tenant_id       = "e47cc316-01c9-4e64-b3b0-c1d4492201fc"
+  subscription_id = "5935fb87-eae8-429f-b3ea-aeb9da97e1c2"
+}
+
+locals {
+    resource_group_name = "myrg"
+    location = "Central india"
+    virtual_network = {    
+        name = "Vnet1"
+        address_space = "10.0.0.0/16"   
+    }
+    subnets = [       //map of values
+        {
+            name ="subnet1"
+            address_prefix = "10.0.1.0/24"
+        },
+        {
+            name ="subnet2"
+            address_prefix = "10.0.2.0/24"
+        }
+
+    ]
+}
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_virtual_network" "myVnet" {
+  name                = local.virtual_network.name
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  address_space       = [local.virtual_network.address_space]
+  
+}
+
+resource "azurerm_subnet" "SubnetA" {
+  name                 = local.subnets[0].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[0].address_prefix]
+  
+
+}
+
+resource "azurerm_subnet" "SubnetB" {
+  name                 = local.subnets[1].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[1].address_prefix]
+
+}
+
+
+--------------------------------------------------------
+v-12-- create NIC
+main.tf
+-------------------------------------------
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "4.47.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  # Configuration options
+  features {}
+  client_id       = "c1f28e11-6ba6-4ae5-a90a-ce1cbe5dde2f"
+  client_secret   = "p7e8Q~6.Ya4GpOSMjA3_66VD4NNkdmrsq6-qIap9"
+  tenant_id       = "e47cc316-01c9-4e64-b3b0-c1d4492201fc"
+  subscription_id = "5935fb87-eae8-429f-b3ea-aeb9da97e1c2"
+}
+
+locals {
+    resource_group_name = "myrg"
+    location = "Central india"
+    virtual_network = {    
+        name = "Vnet1"
+        address_space = "10.0.0.0/16"   
+    }
+    subnets = [       //map of values
+        {
+            name ="subnet1"
+            address_prefix = "10.0.1.0/24"
+        },
+        {
+            name ="subnet2"
+            address_prefix = "10.0.2.0/24"
+        }
+
+    ]
+}
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_virtual_network" "myVnet" {
+  name                = local.virtual_network.name
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  address_space       = [local.virtual_network.address_space]
+  
+}
+
+resource "azurerm_subnet" "SubnetA" {
+  name                 = local.subnets[0].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[0].address_prefix]
+  
+
+}
+
+resource "azurerm_subnet" "SubnetB" {
+  name                 = local.subnets[1].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[1].address_prefix]
+
+}
+
+resource "azurerm_network_interface" "Mynic" {
+  name                = "nic1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  ip_configuration {
+    name                          = "myip"
+    subnet_id                     = azurerm_subnet.SubnetA.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+
+-----------------------------------------------------
+v-13-- output values
+main.tf
+----------------------------------------
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "4.47.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  # Configuration options
+  features {}
+  client_id       = "c1f28e11-6ba6-4ae5-a90a-ce1cbe5dde2f"
+  client_secret   = "p7e8Q~6.Ya4GpOSMjA3_66VD4NNkdmrsq6-qIap9"
+  tenant_id       = "e47cc316-01c9-4e64-b3b0-c1d4492201fc"
+  subscription_id = "5935fb87-eae8-429f-b3ea-aeb9da97e1c2"
+}
+
+locals {
+    resource_group_name = "myrg"
+    location = "Central india"
+    virtual_network = {    
+        name = "Vnet1"
+        address_space = "10.0.0.0/16"   
+    }
+    subnets = [       //map of values
+        {
+            name ="subnet1"
+            address_prefix = "10.0.1.0/24"
+        },
+        {
+            name ="subnet2"
+            address_prefix = "10.0.2.0/24"
+        }
+
+    ]
+}
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_virtual_network" "myVnet" {
+  name                = local.virtual_network.name
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  address_space       = [local.virtual_network.address_space]
+  
+}
+
+resource "azurerm_subnet" "SubnetA" {
+  name                 = local.subnets[0].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[0].address_prefix]
+  
+
+}
+
+resource "azurerm_subnet" "SubnetB" {
+  name                 = local.subnets[1].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[1].address_prefix]
+
+}
+
+resource "azurerm_network_interface" "Mynic" {
+  name                = "nic1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  ip_configuration {
+    name                          = "myip"
+    subnet_id                     = azurerm_subnet.SubnetA.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+output "Subnet_id"{     //output
+    value = azurerm_subnet.SubnetA.id
+}
+
+-----------------------------------------------------------------
+v-14 create public ip and associated with nic1
+main.tf
+-------------------------------------------------------------------
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "4.47.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  # Configuration options
+  features {}
+  client_id       = "c1f28e11-6ba6-4ae5-a90a-ce1cbe5dde2f"
+  client_secret   = "p7e8Q~6.Ya4GpOSMjA3_66VD4NNkdmrsq6-qIap9"
+  tenant_id       = "e47cc316-01c9-4e64-b3b0-c1d4492201fc"
+  subscription_id = "5935fb87-eae8-429f-b3ea-aeb9da97e1c2"
+}
+
+locals {
+    resource_group_name = "myrg"
+    location = "Central india"
+    virtual_network = {    
+        name = "Vnet1"
+        address_space = "10.0.0.0/16"   
+    }
+    subnets = [       //map of values
+        {
+            name ="subnet1"
+            address_prefix = "10.0.1.0/24"
+        },
+        {
+            name ="subnet2"
+            address_prefix = "10.0.2.0/24"
+        }
+
+    ]
+}
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_virtual_network" "myVnet" {
+  name                = local.virtual_network.name
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  address_space       = [local.virtual_network.address_space]
+  
+}
+
+resource "azurerm_subnet" "SubnetA" {
+  name                 = local.subnets[0].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[0].address_prefix]
+  
+
+}
+
+resource "azurerm_subnet" "SubnetB" {
+  name                 = local.subnets[1].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[1].address_prefix]
+
+}
+
+resource "azurerm_network_interface" "Mynic" {
+  name                = "nic1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  ip_configuration {
+    name                          = "myip"
+    subnet_id                     = azurerm_subnet.SubnetA.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = azurerm_public_ip.mypublicip.id   //added for publi ip and associated public ip to nic
+  }
+}
+
+
+
+resource "azurerm_public_ip" "mypublicip" {    //create public ip
+  name                = "myip"
+  resource_group_name = azurerm_resource_group.RG_details.name
+  location            = local.location
+  allocation_method   = "Static"
+}
+
+output "Subnet_id"{
+    value = azurerm_subnet.SubnetA.id
+}
+
+
+v-15  create nsg and attach to subnet
+main.tf
+----------------------------------------------------
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "4.47.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  # Configuration options
+  features {}
+  client_id       = "c1f28e11-6ba6-4ae5-a90a-ce1cbe5dde2f"
+  client_secret   = "p7e8Q~6.Ya4GpOSMjA3_66VD4NNkdmrsq6-qIap9"
+  tenant_id       = "e47cc316-01c9-4e64-b3b0-c1d4492201fc"
+  subscription_id = "5935fb87-eae8-429f-b3ea-aeb9da97e1c2"
+}
+
+locals {
+    resource_group_name = "myrg"
+    location = "Central india"
+    virtual_network = {    
+        name = "Vnet1"
+        address_space = "10.0.0.0/16"   
+    }
+    subnets = [       //map of values
+        {
+            name ="subnet1"
+            address_prefix = "10.0.1.0/24"
+        },
+        {
+            name ="subnet2"
+            address_prefix = "10.0.2.0/24"
+        }
+
+    ]
+}
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_virtual_network" "myVnet" {
+  name                = local.virtual_network.name
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  address_space       = [local.virtual_network.address_space]
+  
+}
+
+resource "azurerm_subnet" "SubnetA" {
+  name                 = local.subnets[0].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[0].address_prefix]
+  
+
+}
+
+resource "azurerm_subnet" "SubnetB" {
+  name                 = local.subnets[1].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[1].address_prefix]
+
+}
+
+resource "azurerm_network_interface" "Mynic" {
+  name                = "nic1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  ip_configuration {
+    name                          = "myip"
+    subnet_id                     = azurerm_subnet.SubnetA.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = azurerm_public_ip.mypublicip.id   //added for publi ip and associated public ip to nic
+  }
+}
+
+
+
+resource "azurerm_public_ip" "mypublicip" {    //create public ip
+  name                = "myip"
+  resource_group_name = azurerm_resource_group.RG_details.name
+  location            = local.location
+  allocation_method   = "Static"
+}
+
+output "Subnet_id"{
+    value = azurerm_subnet.SubnetA.id
+}
+
+resource "azurerm_network_security_group" "NSGdetails" {
+  name                = "nsg1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  security_rule {
+    name                       = "myrdp"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsgassociationforA" {
+  subnet_id                 = azurerm_subnet.SubnetA.id
+  network_security_group_id = azurerm_network_security_group.NSGdetails.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsgassociationforB" {
+  subnet_id                 = azurerm_subnet.SubnetB.id
+  network_security_group_id = azurerm_network_security_group.NSGdetails.id
+}
+
+--------------------------------
+v-16 create window virtual_network_name
+main.tf
+----------------------------------------------
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "4.47.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  # Configuration options
+  features {}
+  client_id       = "c1f28e11-6ba6-4ae5-a90a-ce1cbe5dde2f"
+  client_secret   = "p7e8Q~6.Ya4GpOSMjA3_66VD4NNkdmrsq6-qIap9"
+  tenant_id       = "e47cc316-01c9-4e64-b3b0-c1d4492201fc"
+  subscription_id = "5935fb87-eae8-429f-b3ea-aeb9da97e1c2"
+}
+
+locals {
+    resource_group_name = "myrg"
+    location = "Central india"
+    virtual_network = {    
+        name = "Vnet1"
+        address_space = "10.0.0.0/16"   
+    }
+    subnets = [       //map of values
+        {
+            name ="subnet1"
+            address_prefix = "10.0.1.0/24"
+        },
+        {
+            name ="subnet2"
+            address_prefix = "10.0.2.0/24"
+        }
+
+    ]
+}
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_virtual_network" "myVnet" {
+  name                = local.virtual_network.name
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  address_space       = [local.virtual_network.address_space]
+  
+}
+
+resource "azurerm_subnet" "SubnetA" {
+  name                 = local.subnets[0].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[0].address_prefix]
+  
+
+}
+
+resource "azurerm_subnet" "SubnetB" {
+  name                 = local.subnets[1].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[1].address_prefix]
+
+}
+
+resource "azurerm_network_interface" "Mynic" {
+  name                = "nic1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  ip_configuration {
+    name                          = "myip"
+    subnet_id                     = azurerm_subnet.SubnetA.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = azurerm_public_ip.mypublicip.id   //added for publi ip and associated public ip to nic
+  }
+}
+
+
+
+resource "azurerm_public_ip" "mypublicip" {    //create public ip
+  name                = "myip"
+  resource_group_name = azurerm_resource_group.RG_details.name
+  location            = local.location
+  allocation_method   = "Static"
+}
+
+output "Subnet_id"{
+    value = azurerm_subnet.SubnetA.id
+}
+
+resource "azurerm_network_security_group" "NSGdetails" {
+  name                = "nsg1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  security_rule {
+    name                       = "myrdp"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsgassociationforA" {
+  subnet_id                 = azurerm_subnet.SubnetA.id
+  network_security_group_id = azurerm_network_security_group.NSGdetails.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsgassociationforB" {
+  subnet_id                 = azurerm_subnet.SubnetB.id
+  network_security_group_id = azurerm_network_security_group.NSGdetails.id
+}
+
+resource "azurerm_windows_virtual_machine" "win-vm" {
+  name                = "w-vm1"
+  resource_group_name = azurerm_resource_group.RG_details.name
+  location            = local.location
+  size                = "Standard_B2s"
+  admin_username      = "adminuser"
+  admin_password      = "P@$$w0rd1234!"
+  network_interface_ids = [
+    azurerm_network_interface.Mynic.id,
+  ]
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2022-Datacenter"
+    version   = "latest"
+  }
+}
+
+
+
+
+
+
+v-17 splitting terraform Configuration-----------------------------------
+probider.tf
+===========================
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "4.47.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  # Configuration options
+  features {}
+  client_id       = "c1f28e11-6ba6-4ae5-a90a-ce1cbe5dde2f"
+  client_secret   = "p7e8Q~6.Ya4GpOSMjA3_66VD4NNkdmrsq6-qIap9"
+  tenant_id       = "e47cc316-01c9-4e64-b3b0-c1d4492201fc"
+  subscription_id = "5935fb87-eae8-429f-b3ea-aeb9da97e1c2"
+}
+
+
+locals.tf
+=====================
+locals {
+    resource_group_name = "myrg"
+    location = "Central india"
+    virtual_network = {    
+        name = "Vnet1"
+        address_space = "10.0.0.0/16"   
+    }
+    subnets = [       //map of values
+        {
+            name ="subnet1"
+            address_prefix = "10.0.1.0/24"
+        },
+        {
+            name ="subnet2"
+            address_prefix = "10.0.2.0/24"
+        }
+
+    ]
+}
+
+
+main.tf
+======================
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_virtual_network" "myVnet" {
+  name                = local.virtual_network.name
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  address_space       = [local.virtual_network.address_space]
+  
+}
+
+resource "azurerm_subnet" "SubnetA" {
+  name                 = local.subnets[0].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[0].address_prefix]
+  
+
+}
+
+resource "azurerm_subnet" "SubnetB" {
+  name                 = local.subnets[1].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[1].address_prefix]
+
+}
+
+resource "azurerm_network_interface" "Mynic" {
+  name                = "nic1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  ip_configuration {
+    name                          = "myip"
+    subnet_id                     = azurerm_subnet.SubnetA.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = azurerm_public_ip.mypublicip.id   //added for publi ip and associated public ip to nic
+  }
+}
+
+
+
+resource "azurerm_public_ip" "mypublicip" {    //create public ip
+  name                = "myip"
+  resource_group_name = azurerm_resource_group.RG_details.name
+  location            = local.location
+  allocation_method   = "Static"
+}
+
+output "Subnet_id"{
+    value = azurerm_subnet.SubnetA.id
+}
+
+resource "azurerm_network_security_group" "NSGdetails" {
+  name                = "nsg1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  security_rule {
+    name                       = "myrdp"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsgassociationforA" {
+  subnet_id                 = azurerm_subnet.SubnetA.id
+  network_security_group_id = azurerm_network_security_group.NSGdetails.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsgassociationforB" {
+  subnet_id                 = azurerm_subnet.SubnetB.id
+  network_security_group_id = azurerm_network_security_group.NSGdetails.id
+}
+
+resource "azurerm_windows_virtual_machine" "win-vm" {
+  name                = "w-vm1"
+  resource_group_name = azurerm_resource_group.RG_details.name
+  location            = local.location
+  size                = "Standard_B2s"
+  admin_username      = "adminuser"
+  admin_password      = "P@$$w0rd1234!"
+  network_interface_ids = [
+    azurerm_network_interface.Mynic.id,
+  ]
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2022-Datacenter"
+    version   = "latest"
+  }
+}
+
+
+------------------------------------------------------------
+
+
+v-18   create data disk and attach to vm
+main.tf
+----------------------------------
+
+
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_virtual_network" "myVnet" {
+  name                = local.virtual_network.name
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  address_space       = [local.virtual_network.address_space]
+  
+}
+
+resource "azurerm_subnet" "SubnetA" {
+  name                 = local.subnets[0].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[0].address_prefix]
+  
+
+}
+
+resource "azurerm_subnet" "SubnetB" {
+  name                 = local.subnets[1].name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.myVnet.name
+  address_prefixes     = [local.subnets[1].address_prefix]
+
+}
+
+resource "azurerm_network_interface" "Mynic" {
+  name                = "nic1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  ip_configuration {
+    name                          = "myip"
+    subnet_id                     = azurerm_subnet.SubnetA.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = azurerm_public_ip.mypublicip.id   //added for publi ip and associated public ip to nic
+  }
+}
+
+
+
+resource "azurerm_public_ip" "mypublicip" {    //create public ip
+  name                = "myip"
+  resource_group_name = azurerm_resource_group.RG_details.name
+  location            = local.location
+  allocation_method   = "Static"
+}
+
+output "Subnet_id"{
+    value = azurerm_subnet.SubnetA.id
+}
+
+resource "azurerm_network_security_group" "NSGdetails" {
+  name                = "nsg1"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  security_rule {
+    name                       = "myrdp"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsgassociationforA" {
+  subnet_id                 = azurerm_subnet.SubnetA.id
+  network_security_group_id = azurerm_network_security_group.NSGdetails.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsgassociationforB" {
+  subnet_id                 = azurerm_subnet.SubnetB.id
+  network_security_group_id = azurerm_network_security_group.NSGdetails.id
+}
+
+resource "azurerm_windows_virtual_machine" "win-vm" {       //create windows vm
+  name                = "w-vm1"
+  resource_group_name = azurerm_resource_group.RG_details.name
+  location            = local.location
+  size                = "Standard_B2s"
+  admin_username      = "adminuser"
+  admin_password      = "P@$$w0rd1234!"
+  network_interface_ids = [
+    azurerm_network_interface.Mynic.id,
+  ]
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2022-Datacenter"
+    version   = "latest"
+  }
+}
+
+resource "azurerm_managed_disk" "manageddisk" {  //create data disk
+  name                 = "disk1"  
+  location             = local.location
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  storage_account_type = "Standard_LRS"
+  create_option        = "Empty"
+  disk_size_gb         = 10
+}
+
+resource "azurerm_virtual_machine_data_disk_attachment" "siskattach" {   //attach data disk to vm
+  managed_disk_id    = azurerm_managed_disk.manageddisk.id
+  virtual_machine_id = azurerm_windows_virtual_machine.win-vm.id
+  lun                = "10"
+  caching            = "ReadWrite"
+}
+
+
+
+v-21  ---create multiple storage account
+main.tf-     uding count metadata
+----------------------------------
+
+
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+
+//  craete multiple storage account
+resource "azurerm_storage_account" "Storage1" {
+  count = 3
+  name                     = "mystorage1122334455${count.index}"
+  resource_group_name      = azurerm_resource_group.RG_details.name
+  location                 = local.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+  account_kind = "StorageV2"
+}
+
+
+
+--------------------------------------
+v-22 --for each
+main.tf----create multiple RG using for_each metadat
+------------------------------
+variable "resource_group" {
+  type = map(object({
+    resource_group_name = string
+    location = string
+    }
+  )
+  )
+
+  default = {
+    "rg1" = {
+      resource_group_name = "my-rg-1"
+      location = "East US"
+    },
+    "rg2" = {
+      resource_group_name = "my-rg-2"
+      location = "west US"
+    },
+    "rg3" = {
+      resource_group_name = "my-rg-3"
+      location = "central india"
+    },
+
+  }
+}
+
+resource "azurerm_resource_group" "RG_details" {
+  for_each = var.resource_group
+  name     =  each.value.resource_group_name
+  location =  each.value.location
+}
+
+
+v-23   create multiple RG,storage,conatiner,blob using for_each metadat
+main.tf
+------------------------------------
+variable "resource_group" {
+  type = map(object({
+    resource_group_name = string
+    location = string
+    storage_account = string
+    container_name = string
+    blob = string
+    }
+  )
+  )
+
+  default = {
+    "rg1" = {
+      resource_group_name = "my-rg-1"
+      location = "East US"
+      storage_account = "storage998877sam"
+      container_name = "sam"
+      blob = "C:\\terraform by azurepedia\\sam.txt"
+    },
+    "rg2" = {
+      resource_group_name = "my-rg-2"
+      location = "west US"
+      storage_account = "storage998877sam1"
+      container_name = "sam1"
+      blob = "C:\\terraform by azurepedia\\sam1.txt"
+    },
+    "rg3" = {
+      resource_group_name = "my-rg-3"
+      location = "central india"
+      storage_account = "storage998877sam2"
+      container_name = "sam2"
+      blob = "C:\\terraform by azurepedia\\sam2.txt"
+    }
+
+  }
+}
+
+resource "azurerm_resource_group" "RG_details" {
+  for_each = var.resource_group
+  name     =  each.value.resource_group_name
+  location =  each.value.location
+}
+
+resource "azurerm_storage_account" "Storage1" {
+  for_each = var.resource_group
+  name                     = each.value.storage_account
+  resource_group_name      = each.value.resource_group_name
+  location                 = each.value.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+  account_kind = "StorageV2"
+  depends_on = [ azurerm_resource_group.RG_details ]
+}
+
+resource "azurerm_storage_container" "containerdetails" {
+  for_each = var.resource_group
+  name                  = each.value.container_name
+  storage_account_name  = each.value.storage_account
+  container_access_type = "blob"
+  depends_on = [ azurerm_storage_account.Storage1 ]
+}
+
+resource "azurerm_storage_blob" "blobdetails" {
+  for_each = var.resource_group
+  name                   = "${each.value.container_name}.txt"
+  storage_account_name   = each.value.storage_account
+  storage_container_name = each.value.container_name
+  type                   = "Block"
+  source                 = each.value.blob
+  depends_on = [ azurerm_storage_container.containerdetails ]
+}
+
+
+v-24   --data source
+main.tf
+--------------------------------
+data "azurerm_resource_group" "RGdetails" {  //created in portal
+  name = "rg-1"
+}
+
+resource "azurerm_virtual_network" "Vnetdetails" {
+  name                = "Vnet"
+  location            = data.azurerm_resource_group.RGdetails.location
+  resource_group_name = data.azurerm_resource_group.RGdetails.name
+
+  address_space       = ["10.0.0.0/16"]
+  
+
+  subnet {
+    name             = "subnet1"
+    address_prefixes = ["10.0.1.0/24"]
+  }
+
+  subnet {
+    name             = "subnet2"
+    address_prefixes = ["10.0.2.0/24"]
+    
+  }
+  depends_on = [ data.azurerm_resource_group.RGdetails ]
+  
+}
+
+v-26---create random_uuid
+main.tf
+-----------------------------
+data "azurerm_resource_group" "RGdetails" {  //created in portal
+  name = "rg-1"
+}
+
+resource "random_uuid" "test_uuid" {   //create random id
+}
+
+output "See_random_uuid" {
+  value = substr(random_uuid.test_uuid.result,0,8)  //show random id with range 8
+}
+
+resource "azurerm_storage_account" "Storage1" {
+  
+  name                     = join("",["st",substr(random_uuid.test_uuid.result,0,8)])    //join "st" with random id
+  resource_group_name      = data.azurerm_resource_group.RGdetails.name
+  location                 = data.azurerm_resource_group.RGdetails.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+  account_kind = "StorageV2"
+  depends_on = [ data.azurerm_resource_group.RGdetails, random_uuid.test_uuid ]
+}
+
+
+v-27 ---/multipe nsg rule using for each
+-------------------------------------------------
+variable.tf
+--------------------------------
+variable "security_rule"{
+    type = map(object({
+        name = string
+        priority =number
+        destination_port_range = string
+    }))
+    default = {
+      "rule1" = {
+        name = "rdp-rule"
+        priority =100
+        destination_port_range = "3389"
+        
+      },
+      "rule2" = {
+        name = "ssh-rule"
+        priority =200
+        destination_port_range = "22"
+        
+      },
+      "rule3" = {
+        name = "https-rule"
+        priority =400
+        destination_port_range = "443"
+        
+      },
+      "rule4" = {
+        name = "http-rule"
+        priority =300
+        destination_port_range = "80"
+        
+      }
+    }
+}
+
+---------------------------------------
+main.tf
+------------------------------------------
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_network_security_group" "NSGdetails" {
+  name                = "TestSecurityGroup1"
+  location            = azurerm_resource_group.RG_details.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  
+}
+
+resource "azurerm_network_security_rule" "rule" {
+  for_each = {for rule in var.security_rule : rule.name => rule}  //multipe nsg rule using for each
+  name                        = each.value.name
+  priority                    = each.value.priority
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = each.value.destination_port_range
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.RG_details.name
+  network_security_group_name = azurerm_network_security_group.NSGdetails.name
+}
+
+
+
+v-28  create multiple subnet using for_each and map and list 
+variable.tf
+----------------------------
+variable "security_rule"{
+    type = map(object({  //using map becaues havind different string,number value
+        name = string
+        priority =number
+        destination_port_range = string
+    }))
+    default = {                   //for map use {}
+      "rule1" = {
+        name = "rdp-rule"
+        priority =100
+        destination_port_range = "3389"
+        
+      },
+      "rule2" = {
+        name = "ssh-rule"
+        priority =200
+        destination_port_range = "22"
+        
+      },
+      "rule3" = {
+        name = "https-rule"
+        priority =400
+        destination_port_range = "443"
+        
+      },
+      "rule4" = {
+        name = "http-rule"
+        priority =300
+        destination_port_range = "80"
+        
+      }
+    }
+}
+
+variable "subnets" {
+    type = list(object({   //using list becaues havind same string value
+        name = string
+        address_prefixes = string
+    }))
+    default = [             //for list use[]
+        {
+            name = "subnetA"
+            address_prefixes = "10.0.1.0/24"
+        },
+        {
+            name = "subnetB"
+            address_prefixes = "10.0.2.0/24"
+        },
+        {
+            name = "subnetC"
+            address_prefixes = "10.0.3.0/24"
+        },
+        {
+            name = "subnetD"
+            address_prefixes = "10.0.4.0/24"
+        }
+    ]
+}
+
+main.tf
+--------------------
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_network_security_group" "NSGdetails" {
+  name                = "TestSecurityGroup1"
+  location            = azurerm_resource_group.RG_details.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  
+}
+
+resource "azurerm_network_security_rule" "rule" {
+  for_each = {for rule in var.security_rule : rule.name => rule}
+  name                        = each.value.name
+  priority                    = each.value.priority
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = each.value.destination_port_range
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.RG_details.name
+  network_security_group_name = azurerm_network_security_group.NSGdetails.name
+}
+
+resource "azurerm_virtual_network" "Vnetdetails" {
+  name                = "Vnet1"
+  location            = azurerm_resource_group.RG_details.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  address_space       = ["10.0.0.0/16"]
+  depends_on = [ azurerm_network_security_group.NSGdetails ]
+}
+
+resource "azurerm_subnet" "Subnetdetails" {
+  for_each = {for subnets in var.subnets : subnets.name => subnets}
+  name                 = each.value.name
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.Vnetdetails.name
+  address_prefixes     = [each.value.address_prefixes]
+  depends_on = [ azurerm_virtual_network.Vnetdetails ]
+}
+
+
+v-29   //dyanmic creating nsg
+variable.tf
+-------------------------------
+variable "security_rule"{
+    type = map(object({  //using map becaues havind different string,number value
+        name = string
+        priority =number
+        destination_port_range = string
+    }))
+    default = {                   //for map use {}
+      "rule1" = {
+        name = "rdp-rule"
+        priority =100
+        destination_port_range = "3389"
+        
+      },
+      "rule2" = {
+        name = "ssh-rule"
+        priority =200
+        destination_port_range = "22"
+        
+      },
+      "rule3" = {
+        name = "https-rule"
+        priority =400
+        destination_port_range = "443"
+        
+      },
+      "rule4" = {
+        name = "http-rule"
+        priority =300
+        destination_port_range = "80"
+        
+      }
+    }
+}
+
+main.tf
+-----------------------------------
+
+
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+resource "azurerm_network_security_group" "NSGdetails" {
+  name                = "SecurityGroup1"
+  location            = azurerm_resource_group.RG_details.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  dynamic security_rule {
+    for_each = var.security_rule
+    content {
+    
+    name                       = security_rule.value.name    //this security_rule belong to dynamic security_rule
+    priority                   = security_rule.value.priority
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = security_rule.value.destination_port_range
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  }
+  depends_on = [ azurerm_resource_group.RG_details ]
+}
+
+
+v-30   splitting the configuration files
+-------------------------
+variable.tf
+---------------------
+variable "security_rule"{
+    type = map(object({  //using map becaues havind different string,number value
+        name = string
+        priority =number
+        destination_port_range = string
+    }))
+    default = {                   //for map use {}
+      "rule1" = {
+        name = "rdp-rule"
+        priority =100
+        destination_port_range = "3389"
+        
+      },
+      "rule2" = {
+        name = "ssh-rule"
+        priority =200
+        destination_port_range = "22"
+        
+      },
+      "rule3" = {
+        name = "https-rule"
+        priority =400
+        destination_port_range = "443"
+        
+      },
+      "rule4" = {
+        name = "http-rule"
+        priority =300
+        destination_port_range = "80"
+        
+      }
+    }
+}
+
+main.tf--
+-------------------------
+
+
+
+resource "azurerm_resource_group" "RG_details" {
+  name     =  local.resource_group_name
+  location =  local.location
+}
+
+
+NSG.tf
+-------------------------
+resource "azurerm_network_security_group" "NSGdetails" {
+  name                = "SecurityGroup1"
+  location            = azurerm_resource_group.RG_details.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+
+  dynamic security_rule {
+    for_each = var.security_rule
+    content {
+    
+    name                       = security_rule.value.name
+    priority                   = security_rule.value.priority
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = security_rule.value.destination_port_range
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  }
+  depends_on = [ azurerm_resource_group.RG_details ]
+}
+
+
+storage.tf
+-----------------------------
+resource "azurerm_storage_account" "storagedetails" {
+  name                     = "st34556778"
+  resource_group_name      = azurerm_resource_group.RG_details.name
+  location                 = azurerm_resource_group.RG_details.location
+  account_kind             = "StorageV2"
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+    depends_on = [ azurerm_resource_group.RG_details ]
+
+}
+
+Vnet.tf
+--------------------------
+resource "azurerm_virtual_network" "Vnetdetails" {
+  name                = "Vnet1"
+  location            = azurerm_resource_group.RG_details.location
+  resource_group_name = azurerm_resource_group.RG_details.name
+  address_space       = ["10.0.0.0/16"]
+    depends_on = [ azurerm_resource_group.RG_details]
+}
+
+Subnet.tf
+--------------------------resource "azurerm_subnet" "subnetdetails" {
+  name                 = "subnet1"
+  resource_group_name  = azurerm_resource_group.RG_details.name
+  virtual_network_name = azurerm_virtual_network.Vnetdetails.name
+  address_prefixes     = ["10.0.1.0/24"]
+
+  depends_on = [ azurerm_virtual_network.Vnetdetails ]
+}
+
+
+
+V-32 --modules---creating RG
+folder-resourcegroup
+variable.tf
+-----------------
+variable "RG_name"{
+    type = string
+}
+
+variable "RG_location"{
+    type = string
+}
+
+RG.tf
+---------------------
+resource "azurerm_resource_group" "RGdetails" {
+  name     = "var-${var.RG_name}"
+  location = var.RG_location
+}
+
+output.tf
+---------------------------
+output "RG_name_output" {
+    value = azurerm_resource_group.RGdetails.name
+    description = "The name of the resource group"
+    
+}
+
+output "RG_location_output" {
+    value = azurerm_resource_group.RGdetails.location
+    description = "The location of the resource group"
+    
+}
+
+
+outside the folder
+main.tf
+----------------------
+module "resourcegroup" {
+    source = "./resourcegroup"
+    RG_name= "suhail"
+    RG_location = "central india"
+    
+}
+
+
+
+V-33 module --creating storageaccount
+storageaccount
+storage.tf
+----------------
+
+resource "random_string" "random"{
+    length = 6
+    special = false
+    upper = false
+}
+
+resource "azurerm_storage_account" "storagedetails" {
+  name                     = "${var.storageaccount_name}${random_string.random.result}"
+  resource_group_name      = var.resourcegroup_name
+  location                 = var.storageaccount_location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+    depends_on = [ var.resourcegroup_name ]
+}
+
+
+variable.tf
+----------------------------
+variable "storageaccount_name"{
+    type = string
+}
+
+variable "storageaccount_location"{
+    type = string
+}
+
+variable "resourcegroup_name"{
+    type = string
+}
+
+
+main.tf
+-------------------
+module "resourcegroup" {
+    source = "./resourcegroup"
+    RG_name= "suhail"
+    RG_location = "central india"
+    
+}
+
+module "storageaccount" {
+    source = "./storageaccount"
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    storageaccount_location= module.resourcegroup.RG_location_output
+    storageaccount_name = "storage"
+}
+
+
+V-34 module --creating Vnet
+network folder
+vnet.tf
+---------------------
+resource "azurerm_virtual_network" "Vnetdetails" {
+  name                = var.Vnet_name
+  location            = var.Vnet_location
+  resource_group_name = var.resourcegroup_name
+  address_space       = ["10.0.0.0/16"]
+  depends_on = [ var.resourcegroup_name ]
+}
+
+resource "azurerm_subnet" "app_subnet" {
+  name                 = var.app_subnet
+  resource_group_name  = var.resourcegroup_name
+  virtual_network_name = var.Vnet_name
+  address_prefixes     = ["10.0.1.0/24"]
+  depends_on = [ azurerm_virtual_network.Vnetdetails ]
+
+}
+
+resource "azurerm_subnet" "db_subnet" {
+  name                 = var.db_subnet
+  resource_group_name  = var.resourcegroup_name
+  virtual_network_name = var.Vnet_name
+  address_prefixes     = ["10.0.2.0/24"]
+  depends_on = [ azurerm_virtual_network.Vnetdetails ]
+
+}
+
+variable.tf
+------------------------
+variable "Vnet_name"{
+    type = string
+}
+
+variable "Vnet_location"{
+    type = string
+}
+
+variable "resourcegroup_name"{
+    type = string
+}
+
+variable "app_subnet"{
+    type = string
+}
+
+variable "db_subnet"{
+    type = string
+}
+
+output.tf
+--------------------
+output "app_subnet_output"{
+    value= azurerm_subnet.app_subnet
+}
+
+output "app_subnetid_output"{
+    value= azurerm_subnet.app_subnet.id
+}
+
+
+main.tf
+---------------------------------------
+module "resourcegroup" {
+    source = "./resourcegroup"
+    RG_name= "suhail"
+    RG_location = "central india"
+    
+}
+
+module "storageaccount" {
+    source = "./storageaccount"
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    storageaccount_location= module.resourcegroup.RG_location_output
+    storageaccount_name = "storage"
+}
+
+
+module "virtualnetwork"{
+    source = "./network"
+    Vnet_name = "Vnet"
+    Vnet_location = module.resourcegroup.RG_location_output
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    app_subnet = "app_subnet"
+    db_subnet = "db_subnet"
+}
+
+
+V-35 module --creating NIC
+interfacefolder
+NIC.tf
+----------------------------------------
+resource "azurerm_network_interface" "NICdetails" {
+  name                = var.NIC_name
+  location            = var.NIC_location
+  resource_group_name = var.resourcegroup_name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = var.app_subnetid
+    private_ip_address_allocation = "Dynamic"
+  }
+  depends_on = [ var.app_subnetid ]
+}
+
+variable.tf
+-----------------------
+variable "NIC_name" {
+    type = string
+  
+}
+
+variable "NIC_location" {
+    type = string
+  
+}
+
+variable "resourcegroup_name" {
+    type = string
+  
+}
+
+variable "app_subnetid" {
+    type = string
+  
+}
+
+main.tf
+---------------------------
+module "resourcegroup" {
+    source = "./resourcegroup"
+    RG_name= "suhail"
+    RG_location = "central india"
+    
+}
+
+module "storageaccount" {
+    source = "./storageaccount"
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    storageaccount_location= module.resourcegroup.RG_location_output
+    storageaccount_name = "storage"
+}
+
+
+module "virtualnetwork"{
+    source = "./network"
+    Vnet_name = "Vnet"
+    Vnet_location = module.resourcegroup.RG_location_output
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    app_subnet = "app_subnet"
+    db_subnet = "db_subnet"
+}
+
+module "NIC_card"{
+    source = "./interfacecard"
+    NIC_name = "demo-nic1"
+    NIC_location = module.resourcegroup.RG_location_output
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    app_subnetid = module.virtualnetwork.app_subnetid_output
+}
+
+
+V-36  create public ip          --also modify NIC details config file
+publicip
+publicip.tf
+---------resource "azurerm_public_ip" "pipdetails" {
+  name                = var.pip_name
+  resource_group_name = var.resourcegroup_name
+  location            = var.pip_location
+  allocation_method   = "Static"
+
+ depends_on = [ var.resourcegroup_name ]
+}
+
+variable.tf
+-------------------------
+variable "pip_name"{
+    type = string
+}
+variable "pip_location"{
+    type = string
+}
+variable "resourcegroup_name"{
+    type = string
+}
+
+output.tf
+------------------------------------
+output "publicip_id_output"{
+    value = azurerm_public_ip.pipdetails.id
+}
+
+
+
+
+----------------------------------
+--also modify NIC details config file
+-----------------------------------------
+NIC.tf
+----------------------
+resource "azurerm_network_interface" "NICdetails" {
+  name                = var.NIC_name
+  location            = var.NIC_location
+  resource_group_name = var.resourcegroup_name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = var.app_subnetid
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = var.pip_id                    //added
+  }
+  depends_on = [ var.app_subnetid ]
+}
+
+variable.tf
+------------------------
+variable "NIC_name" {
+    type = string
+  
+}
+
+variable "NIC_location" {
+    type = string
+  
+}
+
+variable "resourcegroup_name" {
+    type = string
+  
+}
+
+variable "app_subnetid" {
+    type = string
+  
+}
+
+variable "pip_id" {                             //added
+    type = string
+  
+}
+
+main.tf
+-------------------------
+module "resourcegroup" {
+    source = "./resourcegroup"
+    RG_name= "suhail"
+    RG_location = "central india"
+    
+}
+
+module "storageaccount" {
+    source = "./storageaccount"
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    storageaccount_location= module.resourcegroup.RG_location_output
+    storageaccount_name = "storage"
+}
+
+
+module "virtualnetwork"{
+    source = "./network"
+    Vnet_name = "Vnet"
+    Vnet_location = module.resourcegroup.RG_location_output
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    app_subnet = "app_subnet"
+    db_subnet = "db_subnet"
+}
+
+module "NIC_card"{
+    source = "./interfacecard"
+    NIC_name = "demo-nic1"
+    NIC_location = module.resourcegroup.RG_location_output
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    app_subnetid = module.virtualnetwork.app_subnetid_output
+    pip_id = module.publicip.publicip_id_output                          //added
+}
+
+module "publicip" {
+  source = "./publicIP"
+  pip_name = "demopip1"
+  pip_location = module.resourcegroup.RG_location_output
+  resourcegroup_name =module.resourcegroup.RG_name_output
+}
+
+
+
+V-37  modules  create NSG and attach to subnet
+NSg folder
+NSG.tf
+----------------------------------
+resource "azurerm_network_security_group" "NSGdetails" {
+  name                = var.NSG_name
+  location            = var.NSG_location
+  resource_group_name = var.RG_name
+
+  security_rule {
+    name                       = "Allow-RDP"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+    depends_on = [ var.RG_name ]
+
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsglink" {
+  subnet_id                 = var.app_subnetid
+  network_security_group_id = azurerm_network_security_group.NSGdetails.id
+  depends_on = [ var.app_subnetid ]
+}
+
+variable.tf
+---------------------------
+variable "NSG_name"{
+    type = string
+}
+
+variable "NSG_location"{
+    type = string
+}
+
+variable "RG_name"{
+    type = string
+}
+
+variable "app_subnetid"{
+    type = string
+}
+
+
+main.tf
+---------------------------
+module "resourcegroup" {
+    source = "./resourcegroup"
+    RG_name= "suhail"
+    RG_location = "central india"
+    
+}
+
+module "storageaccount" {
+    source = "./storageaccount"
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    storageaccount_location= module.resourcegroup.RG_location_output
+    storageaccount_name = "storage"
+}
+
+
+module "virtualnetwork"{
+    source = "./network"
+    Vnet_name = "Vnet"
+    Vnet_location = module.resourcegroup.RG_location_output
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    app_subnet = "app_subnet"
+    db_subnet = "db_subnet"
+}
+
+module "NIC_card"{
+    source = "./interfacecard"
+    NIC_name = "demo-nic1"
+    NIC_location = module.resourcegroup.RG_location_output
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    app_subnetid = module.virtualnetwork.app_subnetid_output
+    pip_id = module.publicip.publicip_id_output
+}
+
+module "publicip" {
+  source = "./publicIP"
+  pip_name = "demopip1"
+  pip_location = module.resourcegroup.RG_location_output
+  resourcegroup_name =module.resourcegroup.RG_name_output
+}
+
+module "NSG"{
+    source = "./NSG"
+    NSG_name = "demo-nsg001"
+    NSG_location = module.resourcegroup.RG_location_output
+    RG_name = module.resourcegroup.RG_name_output
+    app_subnetid =module.virtualnetwork.app_subnetid_output
+}
+
+
+
+V-38  module  --how to apply lock on resources    
+--------after writing lock code, need to give user access administrator permission for app which u have created 
+main.tf
+-----------------------------
+module "resourcegroup" {
+    source = "./resourcegroup"
+    RG_name= "suhail"
+    RG_location = "central india"
+    
+}
+
+module "storageaccount" {
+    source = "./storageaccount"
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    storageaccount_location= module.resourcegroup.RG_location_output
+    storageaccount_name = "storage"
+}
+
+resource "azurerm_management_lock" "storage-lock" {             ///lock for storage account
+  name       = "storage-lock"
+  scope      = module.storageaccount.storage_id_output
+  lock_level = "CanNotDelete"
+  notes      = "Locked because it's needed by a third-party"
+}
+
+
+module "virtualnetwork"{
+    source = "./network"
+    Vnet_name = "Vnet"
+    Vnet_location = module.resourcegroup.RG_location_output
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    app_subnet = "app_subnet"
+    db_subnet = "db_subnet"
+}
+
+module "NIC_card"{
+    source = "./interfacecard"
+    NIC_name = "demo-nic1"
+    NIC_location = module.resourcegroup.RG_location_output
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    app_subnetid = module.virtualnetwork.app_subnetid_output
+    pip_id = module.publicip.publicip_id_output
+}
+
+module "publicip" {
+  source = "./publicIP"
+  pip_name = "demopip1"
+  pip_location = module.resourcegroup.RG_location_output
+  resourcegroup_name =module.resourcegroup.RG_name_output
+}
+
+resource "azurerm_management_lock" "pip-lock" {                            ///lock for public ip
+  name       = "pip-lock"
+  scope      = module.publicip.publicip_id_output
+  lock_level = "CanNotDelete"
+  notes      = "Locked because it's needed by a third-party"
+}
+
+
+module "NSG"{
+    source = "./NSG"
+    NSG_name = "demo-nsg001"
+    NSG_location = module.resourcegroup.RG_location_output
+    RG_name = module.resourcegroup.RG_name_output
+    app_subnetid =module.virtualnetwork.app_subnetid_output
+}
+
+
+
+V-39  how to dele a module   # or /* */ or  teraform destroy -target="module.storageaccount" 6---delete storage account
+main.tf
+-----------------------------------
+module "resourcegroup" {
+    source = "./resourcegroup"
+    RG_name= "suhail"
+    RG_location = "central india"
+    
+}
+/*                                                                    //delete storage module using /* */  
+module "storageaccount" {
+    source = "./storageaccount"
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    storageaccount_location= module.resourcegroup.RG_location_output
+    storageaccount_name = "storage"
+}
+
+resource "azurerm_management_lock" "storage-lock" {
+  name       = "storage-lock"
+  scope      = module.storageaccount.storage_id_output
+  lock_level = "CanNotDelete"
+  notes      = "Locked because it's needed by a third-party"
+}
+*/
+
+or
+
+teraform destroy -target="module.storageaccount"   
+ (its difficult because it has dependency)
+if u delete public ip, its attach to NIc,--so nic will also will be deleted.
+to resolve that, then u have to remove code from NIC(dependencies)
+(dependency means pip code is also present in NIC)
+
+
+module "virtualnetwork"{
+    source = "./network"
+    Vnet_name = "Vnet"
+    Vnet_location = module.resourcegroup.RG_location_output
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    app_subnet = "app_subnet"
+    db_subnet = "db_subnet"
+}
+
+module "NIC_card"{
+    source = "./interfacecard"
+    NIC_name = "demo-nic1"
+    NIC_location = module.resourcegroup.RG_location_output
+    resourcegroup_name = module.resourcegroup.RG_name_output
+    app_subnetid = module.virtualnetwork.app_subnetid_output
+    pip_id = module.publicip.publicip_id_output
+}
+
+module "publicip" {
+  source = "./publicIP"
+  pip_name = "demopip1"
+  pip_location = module.resourcegroup.RG_location_output
+  resourcegroup_name =module.resourcegroup.RG_name_output
+}
+
+resource "azurerm_management_lock" "pip-lock" {
+  name       = "pip-lock"
+  scope      = module.publicip.publicip_id_output
+  lock_level = "CanNotDelete"
+  notes      = "Locked because it's needed by a third-party"
+}
+
+
+module "NSG"{
+    source = "./NSG"
+    NSG_name = "demo-nsg001"
+    NSG_location = module.resourcegroup.RG_location_output
+    RG_name = module.resourcegroup.RG_name_output
+    app_subnetid =module.virtualnetwork.app_subnetid_output
+}
+
+
+
+V-40  --create Azure Active Directory(AD) and role assignment
+create resource
+create user
+give role based access to user
+(also need to do access modification from portal refer v40)
+main.tf
+----------------------
+resource "azurerm_resource_group" "RGdetails" {
+  name     = "rg-details"
+  location = "West Europe"
+}
+
+resource "azuread_user" "User1" {
+  user_principal_name = "Ravana@rravana99gmail.onmicrosoft.com"
+  display_name        = "Ravana"
+  mail_nickname       = "Ravana"
+  password            = "SecretP@sswd99!"
+}
+
+resource "azurerm_role_assignment" "Reader" {
+  scope                = azurerm_resource_group.RGdetails.id
+  role_definition_name = "Reader"
+  principal_id         = azuread_user.User1.object_id
+  depends_on = [ azuread_user.User1 ]
+}
+
+V-41  create custom role
+main.tf
+------------------------
+resource "azurerm_resource_group" "RGdetails" {
+  name     = "rg-details"
+  location = "West Europe"
+}
+
+resource "azuread_user" "User1" {
+  user_principal_name = "Ravana@rravana99gmail.onmicrosoft.com"
+  display_name        = "Ravana"
+  mail_nickname       = "Ravana"
+  password            = "SecretP@sswd99!"
+}
+
+resource "azurerm_role_assignment" "Reader" {
+  scope                = azurerm_resource_group.RGdetails.id
+  role_definition_name = "Reader"
+  principal_id         = azuread_user.User1.object_id
+  depends_on = [ azuread_user.User1 ]
+}
+
+data "azurerm_subscription" "primary" {
+}
+
+//for custom role, service principal should have "user access admin" privilage assigned from portal
+
+resource "azurerm_role_definition" "custom-role-defination" {
+  name        = "my-custom-role"
+  scope       = data.azurerm_subscription.primary.id
+  description = "This is a custom role created via Terraform"
+
+  permissions {
+    actions     = ["Microsoft.Compute/*/read",
+    "Microsoft.Compute/virtualMachines/start/action",
+    "Microsoft.Compute/virtualMachines/restart/action",]
+    not_actions = []
+  }
+
+  assignable_scopes = [
+    data.azurerm_subscription.primary.id, 
+  ]
+}
+
+resource "azurerm_role_assignment" "custom_vm_assignment" {
+  scope                = azurerm_resource_group.RGdetails.id
+  role_definition_name = "my-custom-role"
+  principal_id         = azuread_user.User1.object_id
+  depends_on = [ azuread_user.User1, azurerm_resource_group.RGdetails,azurerm_role_definition.custom-role-defination]
+}
+
+v-42  create SQL database and keyvault
+main.tf
+---------------------------
+resource "azurerm_resource_group" "RGdetails" {
+  name     = "rg-details"
+  location = "West Europe"
+}
+
+resource "azurerm_mssql_server" "sqlserver" {
+  name                         = "mssqlserver1"
+  resource_group_name          = azurerm_resource_group.RGdetails.name
+  location                     = azurerm_resource_group.RGdetails.location
+  version                      = "12.0"
+  administrator_login          = "azureadmin"
+  administrator_login_password = azurerm_key_vault_secret.kvsecret.value
+  minimum_tls_version          = "1.2"
+    depends_on = [ azurerm_resource_group.RGdetails ]
+}
+
+
+resource "azurerm_mssql_database" "sqldb" {
+  name         = "demo-db"
+  server_id    = azurerm_mssql_server.sqlserver.id
+  collation    = "SQL_Latin1_General_CP1_CI_AS"
+  license_type = "LicenseIncluded"
+  max_size_gb  = 2
+  sku_name     = "S0"
+  enclave_type = "VBS"
+  depends_on = [ azurerm_mssql_server.sqlserver, azurerm_resource_group.RGdetails ]
+}
+
+data "azurerm_client_config" "current" {}
+
+
+resource "azurerm_key_vault" "keyvault" {
+  name                        = "dem0keyvault"
+  location                    = azurerm_resource_group.RGdetails.location
+  resource_group_name         = azurerm_resource_group.RGdetails.name
+  enabled_for_disk_encryption = true
+  tenant_id                   = data.azurerm_client_config.current.tenant_id
+  soft_delete_retention_days  = 7
+  purge_protection_enabled    = false
+
+  sku_name = "standard"
+
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = data.azurerm_client_config.current.object_id
+
+    secret_permissions = [
+      "Get", "List", "Set", "Delete", "Purge", "Recover"
+    ]
+
+    
+  }
+}
+
+
+resource "azurerm_key_vault_secret" "kvsecret" {
+  name         = "sql-password"
+  value        = "Sql@123456"
+  key_vault_id = azurerm_key_vault.keyvault.id
+  depends_on = [ azurerm_key_vault.keyvault ]
+}
+ 
